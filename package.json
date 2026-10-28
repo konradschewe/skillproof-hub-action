@@ -1,0 +1,8 @@
+{
+  "name": "skillproof-hub-action",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@skillproof/ui": "^1.0.0"
+  }
+}
