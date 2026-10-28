@@ -1,5 +1,5 @@
 name: 'Skillproof Hub: Generate Dashboard'
-description: 'Generate a multi-repo Skillproof dashboard from a results directory'
+description: 'Generate and deploy a multi-repo Skillproof dashboard to GitHub Pages'
 author: 'konradschewe'
 
 branding:
@@ -10,15 +10,17 @@ inputs:
   results-dir:
     description: 'Path to the results directory, relative to the workspace root'
     default: 'results'
-  output-file:
-    description: 'Output path for the generated HTML dashboard, relative to the workspace root'
-    default: 'index.html'
   max-days:
     description: 'Exclude runs older than N days (0 = keep all)'
     default: '0'
   max-runs:
     description: 'Maximum number of runs to include per repo, newest first (0 = keep all)'
     default: '0'
+
+outputs:
+  page_url:
+    description: 'URL of the deployed GitHub Pages site'
+    value: ${{ steps.deploy.outputs.page_url }}
 
 runs:
   using: 'composite'
@@ -37,8 +39,19 @@ runs:
       shell: bash
       env:
         INPUT_RESULTS_DIR: ${{ inputs.results-dir }}
-        INPUT_OUTPUT_FILE: ${{ inputs.output-file }}
+        INPUT_OUTPUT_FILE: ${{ runner.temp }}/skillproof-hub/index.html
         INPUT_MAX_DAYS: ${{ inputs.max-days }}
         INPUT_MAX_RUNS: ${{ inputs.max-runs }}
         INPUT_UI_HTML: ${{ github.action_path }}/node_modules/@skillproof/ui/dist/index.html
-      run: node "${{ github.action_path }}/scripts/generate.mjs"
+      run: |
+        mkdir -p "${{ runner.temp }}/skillproof-hub"
+        node "${{ github.action_path }}/scripts/generate.mjs"
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ${{ runner.temp }}/skillproof-hub
+
+    - name: Deploy to GitHub Pages
+      id: deploy
+      uses: actions/deploy-pages@v4
