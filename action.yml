@@ -1,0 +1,46 @@
+name: 'Skillproof Hub: Generate Dashboard'
+description: 'Generate a multi-repo Skillproof dashboard from a results directory'
+author: 'konradschewe'
+
+branding:
+  icon: 'bar-chart-2'
+  color: 'blue'
+
+inputs:
+  results-dir:
+    description: 'Path to the results directory, relative to the workspace root'
+    default: 'results'
+  output-file:
+    description: 'Output path for the generated HTML dashboard, relative to the workspace root'
+    default: 'index.html'
+  max-days:
+    description: 'Exclude runs older than N days (0 = keep all)'
+    default: '0'
+  max-runs:
+    description: 'Maximum number of runs to include per repo, newest first (0 = keep all)'
+    default: '0'
+  ui-version:
+    description: 'Version of @skillproof/ui to use for rendering'
+    default: 'latest'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Generate dashboard
+      shell: bash
+      env:
+        INPUT_RESULTS_DIR: ${{ inputs.results-dir }}
+        INPUT_OUTPUT_FILE: ${{ inputs.output-file }}
+        INPUT_MAX_DAYS: ${{ inputs.max-days }}
+        INPUT_MAX_RUNS: ${{ inputs.max-runs }}
+        INPUT_UI_VERSION: ${{ inputs.ui-version }}
+      run: |
+        UI_DIR=$(mktemp -d)
+        npm install --prefix "$UI_DIR" --no-save "@skillproof/ui@$INPUT_UI_VERSION" 2>&1
+        export INPUT_UI_HTML="$UI_DIR/node_modules/@skillproof/ui/dist/index.html"
+        node "${{ github.action_path }}/scripts/generate.mjs"
