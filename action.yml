@@ -1,5 +1,5 @@
 name: 'Skillproof Hub: Generate Dashboard'
-description: 'Generate and deploy a multi-repo Skillproof dashboard to GitHub Pages'
+description: 'Generate a multi-repo Skillproof dashboard and upload it as a GitHub Pages artifact'
 author: 'konradschewe'
 
 branding:
@@ -16,11 +16,6 @@ inputs:
   max-runs:
     description: 'Maximum number of runs to include per repo, newest first (0 = keep all)'
     default: '0'
-
-outputs:
-  page_url:
-    description: 'URL of the deployed GitHub Pages site'
-    value: ${{ steps.deploy.outputs.page_url }}
 
 runs:
   using: 'composite'
@@ -52,6 +47,3 @@ runs:
       with:
         path: ${{ runner.temp }}/skillproof-hub
 
-    - name: Deploy to GitHub Pages
-      id: deploy
-      uses: actions/deploy-pages@v4
